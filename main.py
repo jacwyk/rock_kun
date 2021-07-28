@@ -64,7 +64,7 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
 
 
 #lvl roles 
-    if lvl => 20:
+    if lvl >= 20:
       if (new_role := discord.utils.get(member.guild.roles, id = 870051979114737674)) not in ctx.author.roles:
         await member.add_roles(new_role)
         await member.remove_roles(discord.utils.get(member.guild.roles, id = 870052123012911175))
