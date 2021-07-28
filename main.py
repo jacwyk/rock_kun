@@ -30,31 +30,37 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
 
   async with bot.db.execute("INSERT OR IGNORE INTO guildData (guild_id, user_id, study_time) VALUES (?,?,?)", (ctx.guild.id, ctx.author.id, 0)) as cursor:
 
-#calculate study sesh mins
-    if stop_min >= start_min :
-      study_hr = stop_hr - start_hr
-      study_min = stop_min - start_min
-    else:
-      study_min = 60 - start_min + stop_min
-      study_hr = stop_hr - 1 - start_hr
+#lvl and exp before latest studying sesh
+#retrieve study time from database
+    cur = await bot.db.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, ctx.author.id))
+    data = await cur.fetchone()
+    old_study_time = data[0]
+    old_exp = math.floor(old_study_time/60)  #exp gained every 60 mins study time
+    old_lvl = math.sqrt(old_exp) / bot.multiplier
 
-    total_mins = study_hr * 60 + study_min
+#calculate study sesh mins
+    if stop_hr >= start_hr:
+      if stop_min >= start_min :
+        study_hr = stop_hr - start_hr
+        study_min = stop_min - start_min
+      else:
+        study_min = 60 - start_min + stop_min
+        study_hr = stop_hr - 1 - start_hr
+      total_mins = study_hr * 60 + study_min
 
 #update data
     await bot.db.execute("UPDATE guildData SET study_time = study_time + ? WHERE guild_id = ? AND user_id = ?", (total_mins, ctx.guild.id, ctx.author.id))
 
 #calculate exp and level to check if levelled up
-#retrieve study time from database
     cur = await bot.db.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, ctx.author.id))
     data = await cur.fetchone()
-    study_time = data[0]
+    new_study_time = data[0]
+    new_exp = math.floor(new_study_time/60)  #exp gained every 60 mins study time
+    lvl = math.sqrt(new_exp) / bot.multiplier
 
-#exp gained every 60 mins study time
-    exp = math.floor(study_time/60)
-    lvl = math.sqrt(exp) / bot.multiplier
-
-    if lvl.is_integer():
-        await ctx.send(f"{ctx.author.mention} Level up! Current level: {int(lvl)}.")
+    if lvl > old_lvl:
+        new_lvl = math.floor(lvl)
+        await ctx.send(f"{ctx.author.mention} Level up! Current level: {int(lvl)}")
 
 
 #lvl roles 
@@ -63,12 +69,12 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
         await member.add_roles(new_role)
         await member.remove_roles(discord.utils.get(member.guild.roles, id = 868368367818522644))
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")    
-    if 15 <= lvl <10:
+    elif 15 <= lvl <10:
       if (new_role := discord.utils.get(member.guild.roles, id = 868368401612038186)) not in ctx.author.roles:
         await member.add_roles(new_role)
         await member.remove_roles(discord.utils.get(member.guild.roles, id = 868368367818522644))
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
-    if 10 <= lvl <15:
+    elif 10 <= lvl <15:
       if (new_role := discord.utils.get(member.guild.roles, id = 868368401612038186)) not in ctx.author.roles:
         await member.add_roles(new_role)
         await member.remove_roles(discord.utils.get(member.guild.roles, id = 868368367818522644))
@@ -118,7 +124,7 @@ async def stats(ctx, member: discord.Member=None):
 #total study time calculations
     total_days = math.floor(study_time/(24 * 60))
     total_hrs =  math.floor((study_time - (total_days*1440))/60)
-    total_mins = study_time - total_hrs*60
+    total_mins = study_time - total_hrs*60 - total_days*1440
 
     embed = discord.Embed(title=f"Stats for {member.name}", colour=discord.Colour.blue())
     embed.add_field(name="Level", value=str(lvl))
