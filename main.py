@@ -1,3 +1,6 @@
+#rock kun discord bot study log level system
+#credit to various internet references 
+
 import math
 import aiosqlite
 import discord
