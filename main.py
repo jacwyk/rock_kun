@@ -42,6 +42,7 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
     old_lvl = math.sqrt(old_exp) / bot.multiplier
 
 #calculate study sesh mins
+    total_mins = 0
     if stop_hr >= start_hr:
       if stop_min >= start_min :
         study_hr = stop_hr - start_hr
