@@ -6,20 +6,21 @@ import aiosqlite
 import discord
 import os
 from discord.ext import commands
+import psycopg2
 
 
 my_secret = os.environ['TOKEN']
+DATABASE_URL = os.environ['DATABASE_URL']
 
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 bot.multiplier = 1
 
-
 #database
 async def initialize():
     await bot.wait_until_ready()
-    bot.db = await aiosqlite.connect("expData.db")
+    bot.db = await psycopg2.connect(DATABASE_URL, sslmode='require')
     await bot.db.execute("CREATE TABLE IF NOT EXISTS guildData (guild_id int, user_id int, study_time int, PRIMARY KEY (guild_id, user_id))")
 
 @bot.event
