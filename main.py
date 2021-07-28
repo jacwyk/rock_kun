@@ -64,28 +64,29 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
 
 
 #lvl roles 
-    if 20 <= lvl <15:
-      if (new_role := discord.utils.get(member.guild.roles, id = 868368401612038186)) not in ctx.author.roles:
+    if lvl => 20:
+      if (new_role := discord.utils.get(member.guild.roles, id = 870051979114737674)) not in ctx.author.roles:
         await member.add_roles(new_role)
-        await member.remove_roles(discord.utils.get(member.guild.roles, id = 868368367818522644))
-        await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")    
-    elif 15 <= lvl <10:
-      if (new_role := discord.utils.get(member.guild.roles, id = 868368401612038186)) not in ctx.author.roles:
-        await member.add_roles(new_role)
-        await member.remove_roles(discord.utils.get(member.guild.roles, id = 868368367818522644))
+        await member.remove_roles(discord.utils.get(member.guild.roles, id = 870052123012911175))
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
-    elif 10 <= lvl <15:
-      if (new_role := discord.utils.get(member.guild.roles, id = 868368401612038186)) not in ctx.author.roles:
+    elif 15 <= lvl < 20:
+      if (new_role := discord.utils.get(member.guild.roles, id = 870052123012911175)) not in ctx.author.roles:
         await member.add_roles(new_role)
-        await member.remove_roles(discord.utils.get(member.guild.roles, id = 868368367818522644))
+        await member.remove_roles(discord.utils.get(member.guild.roles, id = 870052192021774346))
+        await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")  
+        await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
+    elif 10 <= lvl < 15:
+      if (new_role := discord.utils.get(member.guild.roles, id = 870052192021774346)) not in ctx.author.roles:
+        await member.add_roles(new_role)
+        await member.remove_roles(discord.utils.get(member.guild.roles, id = 870052254143639663))
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
     elif 5 <= lvl < 10:
-      if (new_role := discord.utils.get(member.guild.roles, id = 868368367818522644)) not in member.roles:
+      if (new_role := discord.utils.get(member.guild.roles, id = 870052254143639663)) not in member.roles:
         await member.add_roles(new_role)
-        await member.remove_roles(discord.utils.get(member.guild.roles, id = 868368310025203733))
+        await member.remove_roles(discord.utils.get(member.guild.roles, id = 870052296254443551))
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
-    elif 2 <= lvl <5:
-      if (new_role := discord.utils.get(member.guild.roles, id = 868368310025203733)) not in member.roles:
+    elif 2 <= lvl < 5:
+      if (new_role := discord.utils.get(member.guild.roles, id = 870052296254443551)) not in member.roles:
         await member.add_roles(new_role)
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name} title!")
 
