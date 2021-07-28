@@ -42,15 +42,15 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
     old_lvl = math.sqrt(old_exp) / bot.multiplier
 
 #calculate study sesh mins
-    total_mins = 0
     if stop_hr >= start_hr:
-      if stop_min >= start_min :
-        study_hr = stop_hr - start_hr
-        study_min = stop_min - start_min
-      else:
-        study_min = 60 - start_min + stop_min
-        study_hr = stop_hr - 1 - start_hr
-      total_mins = study_hr * 60 + study_min
+        if stop_min >= start_min :
+            study_hr = stop_hr - start_hr
+            study_min = stop_min - start_min
+        else:
+            study_min = 60 - start_min + stop_min
+            study_hr = stop_hr - 1 - start_hr
+        total_mins = study_hr * 60 + study_min
+    else: total_mins = 0
 
 #update data
     await bot.db.execute("UPDATE guildData SET study_time = study_time + ? WHERE guild_id = ? AND user_id = ?", (total_mins, ctx.guild.id, ctx.author.id))
