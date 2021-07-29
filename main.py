@@ -19,7 +19,7 @@ bot.multiplier = 1
 #database
 async def initialize():
     await bot.wait_until_ready()
-    conn = await async.connect(DATABASE_URL, sslmode='require')
+    conn = await asyncpg.connect(DATABASE_URL, sslmode='require')
     cur = conn.cursor()
     await cur.execute("CREATE TABLE IF NOT EXISTS guildData (guild_id int, user_id int, study_time int, PRIMARY KEY (guild_id, user_id))")
 
