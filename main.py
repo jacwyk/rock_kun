@@ -191,4 +191,4 @@ async def leaderboard(ctx):
 TOKEN = os.environ['TOKEN']
 bot.loop.create_task(initialize())
 bot.run(TOKEN)
-asyncio.run(con.close())
+asyncio.run(cur.close())
