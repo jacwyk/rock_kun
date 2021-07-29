@@ -5,8 +5,8 @@ import math
 import discord
 import os
 import asyncio
+import asyncpg
 from discord.ext import commands
-import psycopg2
 
 my_secret = os.environ['TOKEN']
 DATABASE_URL = os.environ['DATABASE_URL']
@@ -19,9 +19,9 @@ bot.multiplier = 1
 #database
 async def initialize():
     await bot.wait_until_ready()
-    conn = await psycopg2.Async.connection.connect(DATABASE_URL, sslmode='require')
+    conn = await async.connect(DATABASE_URL, sslmode='require')
     cur = conn.cursor()
-    await acur.execute("CREATE TABLE IF NOT EXISTS guildData (guild_id int, user_id int, study_time int, PRIMARY KEY (guild_id, user_id))")
+    await cur.execute("CREATE TABLE IF NOT EXISTS guildData (guild_id int, user_id int, study_time int, PRIMARY KEY (guild_id, user_id))")
 
 @bot.event
 async def on_ready():
@@ -32,12 +32,12 @@ async def on_ready():
 async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: int, member: discord.Member=None):
   if member is None: member = ctx.author
 
-  async with acur.execute("INSERT OR IGNORE INTO guildData (guild_id, user_id, study_time) VALUES (?,?,?)", (ctx.guild.id, ctx.author.id, 0)) as cursor:
+  async with cur.execute("INSERT OR IGNORE INTO guildData (guild_id, user_id, study_time) VALUES (?,?,?)", (ctx.guild.id, ctx.author.id, 0)) as cursor:
 
 #lvl and exp before latest studying sesh
 #retrieve study time from database
-    cur = await acur.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, ctx.author.id))
-    data = await acur.fetchone()
+    cur = await cur.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, ctx.author.id))
+    data = await cur.fetchone()
     old_study_time = data[0]
     old_exp = math.floor(old_study_time/60)  #exp gained every 60 mins study time
     old_lvl = math.sqrt(old_exp) / bot.multiplier
@@ -54,11 +54,11 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
     else: total_mins = 0
 
 #update data
-    await acur.execute("UPDATE guildData SET study_time = study_time + ? WHERE guild_id = ? AND user_id = ?", (total_mins, ctx.guild.id, ctx.author.id))
+    await cur.execute("UPDATE guildData SET study_time = study_time + ? WHERE guild_id = ? AND user_id = ?", (total_mins, ctx.guild.id, ctx.author.id))
 
 #calculate exp and level to check if levelled up
-    cur = await acur.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, ctx.author.id))
-    data = await acur.fetchone()
+    cur = await cur.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, ctx.author.id))
+    data = await cur.fetchone()
     new_study_time = data[0]
     new_exp = math.floor(new_study_time/60)  #exp gained every 60 mins study time
     lvl = math.sqrt(new_exp) / bot.multiplier
@@ -96,7 +96,7 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name} title!")
 
 
-    await acur.commit()
+    await cur.commit()
 
 
 #stats commands
@@ -105,8 +105,8 @@ async def stats(ctx, member: discord.Member=None):
     if member is None: member = ctx.author
 
     # get user exp
-    async with acur.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, member.id)) as cursor:
-        data = await acur.fetchone()
+    async with cur.execute("SELECT study_time FROM guildData WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, member.id)) as cursor:
+        data = await cur.fetchone()
         study_time = data[0]
     
     exp = math.floor(study_time/60)
@@ -114,7 +114,7 @@ async def stats(ctx, member: discord.Member=None):
 
 
     # calculate rank
-    async with acur.execute("SELECT study_time FROM guildData WHERE guild_id = ?", (ctx.guild.id,)) as cursor:
+    async with cur.execute("SELECT study_time FROM guildData WHERE guild_id = ?", (ctx.guild.id,)) as cursor:
         rank = 1
         async for value in cursor:
             if exp < value[0]:
@@ -165,7 +165,7 @@ async def leaderboard(ctx):
             embed.title = f"Leaderboard Page {current}"
             embed.description = ""
 
-            async with acur.execute(f"SELECT user_id, study_time FROM guildData WHERE guild_id = ? ORDER BY study_time DESC LIMIT ? OFFSET ? ", (ctx.guild.id, entries_per_page, entries_per_page*(current-1),)) as cursor:
+            async with cur.execute(f"SELECT user_id, study_time FROM guildData WHERE guild_id = ? ORDER BY study_time DESC LIMIT ? OFFSET ? ", (ctx.guild.id, entries_per_page, entries_per_page*(current-1),)) as cursor:
                 index = entries_per_page*(current-1)
 
                 async for entry in cursor:
