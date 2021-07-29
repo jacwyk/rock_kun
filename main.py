@@ -2,7 +2,6 @@
 #credit to various internet references 
 
 import math
-import aiosqlite
 import discord
 import os
 from discord.ext import commands
