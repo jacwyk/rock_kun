@@ -1,5 +1,5 @@
-psycopg2
 asyncio
+asyncpg
 discord==1.7.3
 discord.py==1.7.3
 distlib==0.3.2
