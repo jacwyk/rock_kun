@@ -5,7 +5,6 @@ import math
 import discord
 import os
 import asyncio
-from lib.bot import bot
 from discord.ext import commands
 import psycopg2
 
