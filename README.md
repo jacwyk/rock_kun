@@ -21,7 +21,7 @@ Instructions/Commands: <br />
   Note: space between each set of numbers required for session to be recorded (ex: **!studying 3.01-6.39** will not work) <br />
   Note: everything must be filled in, ie. command input must have start hr, start min, end hr, end min (ex: **!studying 9 50 10 03** will work, but **!studying 9 10 03** will not) <br />
   Note: if going from am to pm, use 24hr time instead of 12hr. Otherwise, 12/24 both fine (ex: for 7pm-8pm, **!studying 7 00 8 00** and **!studying 19 00 20 00** will both work) <br />
-  Note: end time must be greater than start time to be recorded (ex: 10:25pm to 1:05am must be separated into 2 sessions, **!studying 10 25 12 00** and **!studying 12 00 1 05**) <br />
+  Note: end time must be greater than start time to be recorded (ex: 10:25pm to 1:05am must be separated into 2 sessions, **!studying 10 25 12 00** and **!studying 00 00 1 05**) <br />
   
 -Check personal stats using command: <br />
 **!stats** <br />
