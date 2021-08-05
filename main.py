@@ -7,6 +7,8 @@ import os
 import asyncio
 import asyncpg
 from discord.ext import commands
+from webserver import keep_alive
+
 
 TOKEN = os.environ['TOKEN']
 DATABASE_URL = os.environ['DATABASE_URL'] #Heroku
@@ -20,8 +22,12 @@ bot.multiplier = 1
 #database
 async def initialize():
     await bot.wait_until_ready()
-    bot.db = await asyncpg.connect(DATABASE_URL)
-    await bot.db.execute('''CREATE TABLE IF NOT EXISTS guildData (guild_id bigint, user_id bigint PRIMARY KEY, study_time int)''')
+    try:
+        bot.db = await asyncpg.create_pool(DATABASE_URL, max_inactive_connection_lifetime=3)
+        await bot.db.execute('''CREATE TABLE IF NOT EXISTS guildData (guild_id bigint, user_id bigint PRIMARY KEY, study_time int)''')
+    except:
+        channel = ctx.get_channel(868357594354417734)
+        await channel.send("<@!867286219545116693>, Error: database connection closed.")
 
 
 @bot.event
@@ -33,6 +39,7 @@ async def on_ready():
 #studying command to log in study time
 @bot.command()
 async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: int, member: discord.Member=None):
+  #try:
     if member is None: member = ctx.author
     await bot.db.execute('''INSERT INTO guildData(guild_id, user_id, study_time) VALUES($1::bigint, $2::bigint, $3) ON CONFLICT (user_id) DO NOTHING''', ctx.guild.id, ctx.author.id, 0)
     #calculate old lvl
@@ -47,6 +54,8 @@ async def studying(ctx, start_hr: int, start_min: int, stop_hr: int, stop_min: i
     lvl = new_xp_lvl[1]
     await lvlup_announcement(ctx, lvl, old_lvl)
     await assign_lvlroles(ctx, member, lvl)
+  #except exception as e:
+    #await ctx.send(e)
 
 
 
@@ -73,7 +82,9 @@ def calculate_studytime(start_hr, start_min, stop_hr, stop_min):
             study_min = 60 - start_min + stop_min
             study_hr = stop_hr - 1 - start_hr
         total_mins = study_hr * 60 + study_min
-    else: total_mins = 0
+    else: 
+        total_mins = 0
+        #ctx.send(f"{ctx.author.mention} stop hr must be greater than start hr")
     return total_mins
 
 
@@ -91,39 +102,39 @@ async def assign_lvlroles(ctx, member, lvl):
     await bot.db.execute('''SELECT study_time::int FROM guildData WHERE guild_id = $1::bigint AND user_id = $2::bigint''', ctx.guild.id, ctx.author.id)
 
     if lvl >= 20:
-      new_role = discord.utils.get(member.guild.roles, id = 872119399014871080)
-      old_role = discord.utils.get(member.guild.roles, id = 872119375983956068)
+      new_role = discord.utils.get(member.guild.roles, id = 870051979114737674)
+      old_role = discord.utils.get(member.guild.roles, id = 870052123012911175)
       if new_role not in ctx.author.roles:
         await member.add_roles(new_role)
         await member.remove_roles(old_role)
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
 
     elif 15 <= lvl < 20:
-      new_role = discord.utils.get(member.guild.roles, id = 872119375983956068)
-      old_role = discord.utils.get(member.guild.roles, id = 872119353112395886)
+      new_role = discord.utils.get(member.guild.roles, id = 870052123012911175)
+      old_role = discord.utils.get(member.guild.roles, id = 870052192021774346)
       if new_role not in ctx.author.roles:
         await member.add_roles(new_role)
         await member.remove_roles(old_role)
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")  
 
     elif 10 <= lvl < 15:
-      new_role = discord.utils.get(member.guild.roles, id = 872119353112395886)
-      old_role = discord.utils.get(member.guild.roles, id = 872119331947962448)
+      new_role = discord.utils.get(member.guild.roles, id = 870052192021774346)
+      old_role = discord.utils.get(member.guild.roles, id = 870052254143639663)
       if new_role not in ctx.author.roles:
         await member.add_roles(new_role)
         await member.remove_roles(old_role)
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
 
     elif 5 <= lvl < 10:
-      new_role = discord.utils.get(member.guild.roles, id = 872119331947962448)
-      old_role = discord.utils.get(member.guild.roles, id = 872119289568690226)
+      new_role = discord.utils.get(member.guild.roles, id = 870052254143639663)
+      old_role = discord.utils.get(member.guild.roles, id = 870052296254443551)
       if new_role not in member.roles:
         await member.add_roles(new_role)
         await member.remove_roles(old_role)
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name}  title!")
 
     elif 2 <= lvl < 5:
-      new_role = discord.utils.get(member.guild.roles, id = 872119289568690226)
+      new_role = discord.utils.get(member.guild.roles, id = 870052296254443551)
       if new_role not in member.roles:
         await member.add_roles(new_role)
         await ctx.send(f"{ctx.author.mention} Unlocked {new_role.name} title!")
@@ -216,6 +227,8 @@ async def leaderboard(ctx):
             await msg.remove_reaction(reaction.emoji, ctx.author)
             current = buttons[reaction.emoji]
 
+#webserver
+keep_alive()
 
 bot.loop.create_task(initialize())
 bot.run(TOKEN)
